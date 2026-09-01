@@ -56,8 +56,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                         onClick={() => setIsOffline(!isOffline)}
                         className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${isOffline
-                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                                : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                            ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                            : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
                             }`}
                         title="Toggle simulated offline survey mode"
                     >
@@ -95,8 +95,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                         onClick={() => setCurrentTab('landing')}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentTab === 'landing'
-                                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                             }`}
                     >
                         <Home size={14} /> Landing
@@ -104,8 +104,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                         onClick={() => setCurrentTab('dashboard')}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentTab === 'dashboard'
-                                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                             }`}
                     >
                         <BarChart3 size={14} /> Dashboard
@@ -113,8 +113,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                         onClick={() => setCurrentTab('map2d')}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentTab === 'map2d'
-                                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                             }`}
                     >
                         <Map size={14} /> 2D GIS Map
@@ -122,18 +122,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                         onClick={() => setCurrentTab('city3d')}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentTab === 'city3d'
-                                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                             }`}
                     >
                         <Boxes size={14} /> 3D City
+                    </button>
+                    <button
+                        onClick={() => setCurrentTab('pharma3d')}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentTab === 'pharma3d'
+                            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md font-bold'
+                            : 'text-emerald-400 hover:text-emerald-300 hover:bg-slate-800/50'
+                            }`}
+                    >
+                        <Sparkles size={14} /> 3D Digital Twin
                     </button>
                     {userRole !== 'CITIZEN' && (
                         <button
                             onClick={() => setCurrentTab('register')}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentTab === 'register'
-                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                                 }`}
                         >
                             <PlusCircle size={14} /> Register Property
@@ -143,8 +152,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <button
                             onClick={() => setCurrentTab('verification')}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentTab === 'verification'
-                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                                 }`}
                         >
                             <CheckSquare size={14} /> Verification
@@ -153,8 +162,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                         onClick={() => setCurrentTab('audit')}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentTab === 'audit'
-                                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                             }`}
                     >
                         <ShieldCheck size={14} /> Audit Log
@@ -162,8 +171,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                         onClick={() => setCurrentTab('assistant')}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${currentTab === 'assistant'
-                                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                             }`}
                     >
                         <Bot size={14} /> AI Assistant

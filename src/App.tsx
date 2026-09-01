@@ -16,6 +16,7 @@ import { Dashboard } from './components/Dashboard';
 import { GISMap } from './components/GISMap';
 import { Property3DViewer } from './components/Property3DViewer';
 import { ThreeDCityView } from './components/ThreeDCityView';
+import { PharmaDigitalTwin } from './components/PharmaDigitalTwin';
 import { PropertyRegistrationWizard } from './components/PropertyRegistrationWizard';
 import { IDGeneratorModal } from './components/IDGeneratorModal';
 import { PropertyQRModal } from './components/PropertyQRModal';
@@ -219,6 +220,10 @@ export const App: React.FC = () => {
                             setCurrentTab('3dview');
                         }}
                     />
+                )}
+
+                {currentTab === 'pharma3d' && (
+                    <PharmaDigitalTwin />
                 )}
 
                 {currentTab === 'register' && (
