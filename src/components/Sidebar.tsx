@@ -13,7 +13,8 @@ import {
     FlaskConical,
     Presentation,
     Settings,
-    ShieldAlert
+    ShieldAlert,
+    Crown
 } from 'lucide-react';
 import { NavigationTab } from '../types';
 
@@ -34,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'dashboard' as NavigationTab, label: 'Executive Dashboard', icon: LayoutDashboard },
         { id: 'live-cip' as NavigationTab, label: 'Live CIP Monitoring', icon: Activity, badge: 'REALTIME' },
         { id: 'digital-twin' as NavigationTab, label: 'Digital Twin', icon: Box },
+        { id: 'digital-queen' as NavigationTab, label: 'Digital Queen Twin', icon: Crown, badge: 'MASTER 3D', badgeColor: 'bg-amber-500/20 text-amber-300' },
         { id: 'anomaly-intel' as NavigationTab, label: 'Anomaly Intelligence', icon: Cpu, badge: anomalyScore > 50 ? `${Math.round(anomalyScore)}` : undefined, badgeColor: anomalyScore > 60 ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400' },
         { id: 'physics-clearance' as NavigationTab, label: 'Physics & Interlock', icon: Gauge },
         { id: 'equipment' as NavigationTab, label: 'Equipment Health', icon: HardDrive },
@@ -73,16 +75,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
                                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-200 ${isActive
-                                        ? item.special
-                                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                                            : item.highlight
-                                                ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-500/25'
-                                                : 'bg-slate-800 text-cyan-400 shadow-sm border border-slate-700/50'
-                                        : item.special
-                                            ? 'bg-indigo-950/40 text-indigo-300 hover:bg-indigo-900/50 border border-indigo-800/40'
-                                            : item.highlight
-                                                ? 'bg-emerald-950/30 text-emerald-300 hover:bg-emerald-900/40 border border-emerald-800/30'
-                                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                                    ? item.special
+                                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
+                                        : item.highlight
+                                            ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-500/25'
+                                            : 'bg-slate-800 text-cyan-400 shadow-sm border border-slate-700/50'
+                                    : item.special
+                                        ? 'bg-indigo-950/40 text-indigo-300 hover:bg-indigo-900/50 border border-indigo-800/40'
+                                        : item.highlight
+                                            ? 'bg-emerald-950/30 text-emerald-300 hover:bg-emerald-900/40 border border-emerald-800/30'
+                                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                                     }`}
                             >
                                 <div className="flex items-center space-x-3">

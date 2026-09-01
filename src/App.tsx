@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { ExecutiveDashboard } from './components/ExecutiveDashboard';
 import { RealTimeCIPMonitoring } from './components/RealTimeCIPMonitoring';
 import { DigitalTwinViewer } from './components/DigitalTwinViewer';
+import { DigitalTwinQueen } from './components/DigitalTwinQueen';
 import { AnomalyIntelligence } from './components/AnomalyIntelligence';
 import { PhysicsClearancePanel } from './components/PhysicsClearancePanel';
 import { EquipmentHealth } from './components/EquipmentHealth';
@@ -111,6 +112,10 @@ export function App() {
 
                     {activeTab === 'digital-twin' && (
                         <DigitalTwinViewer telemetry={telemetry} />
+                    )}
+
+                    {activeTab === 'digital-queen' && (
+                        <DigitalTwinQueen telemetry={telemetry} />
                     )}
 
                     {activeTab === 'anomaly-intel' && (

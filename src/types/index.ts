@@ -2,6 +2,7 @@ export type NavigationTab =
     | 'dashboard'
     | 'live-cip'
     | 'digital-twin'
+    | 'digital-queen'
     | 'anomaly-intel'
     | 'physics-clearance'
     | 'equipment-health'
