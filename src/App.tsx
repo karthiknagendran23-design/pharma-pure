@@ -1,296 +1,172 @@
-import React, { useState } from 'react';
-import { UserRole, Parcel, Building, Floor, Unit, AuditLogEntry, PropertyEvent } from './types';
-import {
-    INITIAL_PARCELS,
-    INITIAL_BUILDINGS,
-    INITIAL_FLOORS,
-    INITIAL_UNITS,
-    INITIAL_AUDIT_LOGS,
-    FLAGSHIP_PARCEL_ID,
-    FLAGSHIP_BUILDING_ID
-} from './data/mockData';
+import React, { useState, useEffect } from 'react';
+import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
+import { ExecutiveDashboard } from './components/ExecutiveDashboard';
+import { RealTimeCIPMonitoring } from './components/RealTimeCIPMonitoring';
+import { DigitalTwinViewer } from './components/DigitalTwinViewer';
+import { AnomalyIntelligence } from './components/AnomalyIntelligence';
+import { PhysicsClearancePanel } from './components/PhysicsClearancePanel';
+import { EquipmentHealth } from './components/EquipmentHealth';
+import { CIPHistoryComparison } from './components/CIPHistoryComparison';
+import { ResourceOptimization } from './components/ResourceOptimization';
+import { AlarmCenter } from './components/AlarmCenter';
+import { AuditTrailView } from './components/AuditTrailView';
+import { SimulationLab } from './components/SimulationLab';
+import { PitchModeGuide } from './components/PitchModeGuide';
+import { SettingsPanel } from './components/SettingsPanel';
 
-import { Navbar } from './components/Navbar';
-import { LandingPage } from './components/LandingPage';
-import { Dashboard } from './components/Dashboard';
-import { GISMap } from './components/GISMap';
-import { Property3DViewer } from './components/Property3DViewer';
-import { ThreeDCityView } from './components/ThreeDCityView';
-import { PharmaDigitalTwin } from './components/PharmaDigitalTwin';
-import { PropertyRegistrationWizard } from './components/PropertyRegistrationWizard';
-import { IDGeneratorModal } from './components/IDGeneratorModal';
-import { PropertyQRModal } from './components/PropertyQRModal';
-import { AdminVerification } from './components/AdminVerification';
-import { AuditLogView } from './components/AuditLogView';
-import { AIAssistant } from './components/AIAssistant';
-import { DemoModeGuide } from './components/DemoModeGuide';
-import { exportPropertyPDFReport } from './services/pdfExporter';
+import { NavigationTab, UserRole, ScenarioType, CIPTelemetryFrame, AlarmItem, AuditLogItem, EquipmentAsset, CIPHistoryItem } from './types';
+import { api } from './services/api';
 
-export const App: React.FC = () => {
-    // Main Navigation & Role State
-    const [currentTab, setCurrentTab] = useState<string>('landing');
-    const [userRole, setUserRole] = useState<UserRole>('SURVEYOR');
+export function App() {
+    const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
+    const [currentRole, setCurrentRole] = useState<UserRole>('PROCESS_ENGINEER');
+    const [activeScenario, setActiveScenario] = useState<ScenarioType>('NORMAL');
+    const [telemetry, setTelemetry] = useState<CIPTelemetryFrame | null>(null);
+    const [alarms, setAlarms] = useState<AlarmItem[]>([]);
+    const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
+    const [equipment, setEquipment] = useState<EquipmentAsset[]>([]);
+    const [history, setHistory] = useState<CIPHistoryItem[]>([]);
 
-    // Datasets State
-    const [parcels, setParcels] = useState<Parcel[]>(INITIAL_PARCELS);
-    const [buildings, setBuildings] = useState<Building[]>(INITIAL_BUILDINGS);
-    const [floors, setFloors] = useState<Floor[]>(INITIAL_FLOORS);
-    const [units, setUnits] = useState<Unit[]>(INITIAL_UNITS);
-    const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
-
-    // Selection State
-    const [selectedParcelId, setSelectedParcelId] = useState<string | null>(FLAGSHIP_PARCEL_ID);
-    const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(FLAGSHIP_BUILDING_ID);
-    const [selectedUnitId, setSelectedUnitId] = useState<string | null>('u-flagship-8-2'); // Unit 8B
-
-    // Modals & Tour State
-    const [activeUnitForModal, setActiveUnitForModal] = useState<Unit | null>(null);
-    const [showIDModal, setShowIDModal] = useState(false);
-    const [showQRModal, setShowQRModal] = useState(false);
-    const [showDemoGuide, setShowDemoGuide] = useState(false);
-
-    // Offline Simulation State
-    const [isOffline, setIsOffline] = useState(false);
-    const [offlineQueueCount, setOfflineQueueCount] = useState(0);
-
-    // Derived Selection Objects
-    const selectedParcel = parcels.find(p => p.id === selectedParcelId) || parcels[0];
-    const selectedBuilding = buildings.find(b => b.id === selectedBuildingId) || buildings[0];
-    const selectedUnit = units.find(u => u.id === selectedUnitId) || null;
-
-    // Launch Hero Demo Mode
-    const handleLaunchDemo = () => {
-        setSelectedParcelId(FLAGSHIP_PARCEL_ID);
-        setSelectedBuildingId(FLAGSHIP_BUILDING_ID);
-        setSelectedUnitId('u-flagship-8-2'); // Unit 8B
-        setCurrentTab('map2d');
-        setShowDemoGuide(true);
-    };
-
-    // Demo step handler
-    const handleDemoStepChange = (stepNum: number) => {
-        if (stepNum === 1 || stepNum === 2) {
-            setCurrentTab('map2d');
-        } else if (stepNum >= 3 && stepNum <= 5) {
-            setCurrentTab('3dview');
-        } else if (stepNum === 6) {
-            setCurrentTab('3dview');
-            const unit = units.find(u => u.id === 'u-flagship-8-2') || units[0];
-            setActiveUnitForModal(unit);
-            setShowIDModal(true);
-        } else if (stepNum === 7 || stepNum === 8) {
-            setCurrentTab('3dview');
-            setShowIDModal(false);
-            const unit = units.find(u => u.id === 'u-flagship-8-2') || units[0];
-            setActiveUnitForModal(unit);
-            setShowQRModal(true);
-        } else if (stepNum === 9) {
-            setShowQRModal(false);
-            setCurrentTab('verification');
-        }
-    };
-
-    // Add new registered parcel from wizard
-    const handleAddNewParcel = (
-        newParcel: Parcel,
-        newBuilding: Building,
-        newFloors: Floor[],
-        newUnits: Unit[]
-    ) => {
-        setParcels(prev => [newParcel, ...prev]);
-        setBuildings(prev => [newBuilding, ...prev]);
-        setFloors(prev => [...newFloors, ...prev]);
-        setUnits(prev => [...newUnits, ...prev]);
-
-        // Log Audit Entry
-        const newLog: AuditLogEntry = {
-            id: `log-${Date.now()}`,
-            timestamp: new Date().toISOString(),
-            userRole,
-            actorName: 'Surveyor Field Registration',
-            action: 'CREATE_PROPERTY_3D',
-            targetUid: newParcel.parcelUid,
-            details: `Created 3D property hierarchy with ${newBuilding.floorCount} floors and ${newUnits.length} vertical units.`,
-            ipAddress: '10.14.33.102'
+    // Initialize data & live telemetry stream
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const eq = await api.getEquipmentAssets();
+                setEquipment(eq);
+                const al = await api.getAlarms();
+                setAlarms(al);
+                const au = await api.getAuditLogs();
+                setAuditLogs(au);
+                const hi = await api.getCIPHistory();
+                setHistory(hi);
+            } catch (e) {
+                console.error('Data fetch error:', e);
+            }
         };
-        setAuditLogs(prev => [newLog, ...prev]);
+        fetchData();
 
-        setSelectedParcelId(newParcel.id);
-        setSelectedBuildingId(newBuilding.id);
-        setCurrentTab('3dview');
-    };
+        const unsubscribe = api.subscribeToTelemetry((frame: CIPTelemetryFrame) => {
+            setTelemetry(frame);
+        });
 
-    // Admin Verification actions
-    const handleApproveParcel = (parcelId: string) => {
-        setParcels(prev => prev.map(p => p.id === parcelId ? { ...p, status: 'Approved' } : p));
-        const target = parcels.find(p => p.id === parcelId);
-        const newLog: AuditLogEntry = {
-            id: `log-${Date.now()}`,
-            timestamp: new Date().toISOString(),
-            userRole: 'ADMIN',
-            actorName: 'District Revenue Officer',
-            action: 'APPROVE_PROPERTY',
-            targetUid: target?.parcelUid || parcelId,
-            details: 'Approved 3D Cadastral Property registration and VPID identities.',
-            ipAddress: '10.14.0.12'
+        return () => {
+            unsubscribe();
         };
-        setAuditLogs(prev => [newLog, ...prev]);
+    }, []);
+
+    const handleAcknowledgeAlarm = async (alarmId: string, role: UserRole) => {
+        await api.acknowledgeAlarm(alarmId, role);
+        const al = await api.getAlarms();
+        setAlarms(al);
+        const au = await api.getAuditLogs();
+        setAuditLogs(au);
     };
 
-    const handleRequestCorrectionParcel = (parcelId: string) => {
-        setParcels(prev => prev.map(p => p.id === parcelId ? { ...p, status: 'Correction Requested' } : p));
-    };
+    if (!telemetry) {
+        return (
+            <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center space-y-4">
+                <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm font-mono text-cyan-400">Connecting to CleanOptima Edge Telemetry Gateway...</p>
+            </div>
+        );
+    }
+
+    const activeAlarmsCount = alarms.filter(a => a.status === 'ACTIVE').length;
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-            {/* Top Header */}
-            <Navbar
-                currentTab={currentTab}
-                setCurrentTab={setCurrentTab}
-                userRole={userRole}
-                setUserRole={setUserRole}
-                onLaunchDemo={handleLaunchDemo}
-                isOffline={isOffline}
-                setIsOffline={setIsOffline}
-                offlineQueueCount={offlineQueueCount}
+        <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col antialiased selection:bg-cyan-500 selection:text-slate-950">
+            {/* Top Fixed Header */}
+            <Header
+                currentRole={currentRole}
+                setCurrentRole={setCurrentRole}
+                activeAlarmsCount={activeAlarmsCount}
+                decision={telemetry.decision}
+                activeScenario={activeScenario}
             />
 
-            {/* Main View Router */}
-            <main className="flex-1">
-                {currentTab === 'landing' && (
-                    <LandingPage
-                        onExploreMap={() => setCurrentTab('map2d')}
-                        onLaunchDemo={handleLaunchDemo}
-                        onRegister={() => setCurrentTab('register')}
-                    />
-                )}
-
-                {currentTab === 'dashboard' && (
-                    <Dashboard
-                        parcels={parcels}
-                        buildings={buildings}
-                        units={units}
-                    />
-                )}
-
-                {currentTab === 'map2d' && (
-                    <GISMap
-                        parcels={parcels}
-                        buildings={buildings}
-                        units={units}
-                        selectedParcelId={selectedParcelId}
-                        onSelectParcel={(pId) => setSelectedParcelId(pId)}
-                        onOpen3DViewer={(pId, bId) => {
-                            setSelectedParcelId(pId);
-                            if (bId) setSelectedBuildingId(bId);
-                            setCurrentTab('3dview');
-                        }}
-                    />
-                )}
-
-                {currentTab === '3dview' && (
-                    <Property3DViewer
-                        parcel={selectedParcel}
-                        building={selectedBuilding}
-                        floors={floors}
-                        units={units}
-                        selectedUnitId={selectedUnitId}
-                        onSelectUnit={(uId) => setSelectedUnitId(uId)}
-                        onGenerateID={(u) => {
-                            setActiveUnitForModal(u);
-                            setShowIDModal(true);
-                        }}
-                        onOpenQR={(u) => {
-                            setActiveUnitForModal(u);
-                            setShowQRModal(true);
-                        }}
-                        onExportPDF={(u) => {
-                            exportPropertyPDFReport(u, selectedParcel, selectedBuilding);
-                        }}
-                    />
-                )}
-
-                {currentTab === 'city3d' && (
-                    <ThreeDCityView
-                        parcels={parcels}
-                        buildings={buildings}
-                        onSelectBuilding={(pId, bId) => {
-                            setSelectedParcelId(pId);
-                            setSelectedBuildingId(bId);
-                            setCurrentTab('3dview');
-                        }}
-                    />
-                )}
-
-                {currentTab === 'pharma3d' && (
-                    <PharmaDigitalTwin />
-                )}
-
-                {currentTab === 'register' && (
-                    <PropertyRegistrationWizard
-                        parcels={parcels}
-                        onAddNewParcel={handleAddNewParcel}
-                        onCancel={() => setCurrentTab('map2d')}
-                    />
-                )}
-
-                {currentTab === 'verification' && (
-                    <AdminVerification
-                        parcels={parcels}
-                        buildings={buildings}
-                        onApprove={handleApproveParcel}
-                        onReject={() => { }}
-                        onRequestCorrection={handleRequestCorrectionParcel}
-                        onInspect3D={(pId) => {
-                            setSelectedParcelId(pId);
-                            setCurrentTab('3dview');
-                        }}
-                    />
-                )}
-
-                {currentTab === 'audit' && (
-                    <AuditLogView logs={auditLogs} />
-                )}
-
-                {currentTab === 'assistant' && (
-                    <AIAssistant
-                        parcels={parcels}
-                        buildings={buildings}
-                        units={units}
-                    />
-                )}
-            </main>
-
-            {/* ID Generator Modal */}
-            {showIDModal && activeUnitForModal && (
-                <IDGeneratorModal
-                    unit={activeUnitForModal}
-                    onClose={() => setShowIDModal(false)}
-                    onOpenQR={(u) => {
-                        setActiveUnitForModal(u);
-                        setShowQRModal(true);
-                    }}
-                    onOpen3D={() => setCurrentTab('3dview')}
+            {/* Body: Sidebar + Dynamic Main Content View */}
+            <div className="flex flex-1 pt-14">
+                {/* Left Fixed Navigation Sidebar */}
+                <Sidebar
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    activeAlarmsCount={activeAlarmsCount}
+                    anomalyScore={telemetry.ml_anomaly.anomaly_score}
                 />
-            )}
 
-            {/* QR Digital Property Passport Modal */}
-            {showQRModal && activeUnitForModal && (
-                <PropertyQRModal
-                    unit={activeUnitForModal}
-                    parcel={selectedParcel}
-                    building={selectedBuilding}
-                    onClose={() => setShowQRModal(false)}
-                />
-            )}
+                {/* Main Content Area */}
+                <main className="flex-1 ml-64 min-h-[calc(100vh-3.5rem)] bg-slate-950 overflow-y-auto">
+                    {activeTab === 'dashboard' && (
+                        <ExecutiveDashboard
+                            telemetry={telemetry}
+                            equipment={equipment}
+                            setActiveTab={setActiveTab}
+                        />
+                    )}
 
-            {/* Hero Demo Mode Guide Storyteller Overlay */}
-            {showDemoGuide && (
-                <DemoModeGuide
-                    onStepChange={handleDemoStepChange}
-                    onClose={() => setShowDemoGuide(false)}
-                />
-            )}
+                    {activeTab === 'live-cip' && (
+                        <RealTimeCIPMonitoring telemetry={telemetry} setActiveTab={setActiveTab} />
+                    )}
+
+                    {activeTab === 'digital-twin' && (
+                        <DigitalTwinViewer telemetry={telemetry} />
+                    )}
+
+                    {activeTab === 'anomaly-intel' && (
+                        <AnomalyIntelligence telemetry={telemetry} />
+                    )}
+
+                    {activeTab === 'physics-clearance' && (
+                        <PhysicsClearancePanel telemetry={telemetry} />
+                    )}
+
+                    {(activeTab === 'equipment-health' || activeTab === 'equipment') && (
+                        <EquipmentHealth equipment={equipment} />
+                    )}
+
+                    {activeTab === 'cip-history' && (
+                        <CIPHistoryComparison history={history} />
+                    )}
+
+                    {activeTab === 'resource-opt' && (
+                        <ResourceOptimization />
+                    )}
+
+                    {activeTab === 'alarm-center' && (
+                        <AlarmCenter
+                            alarms={alarms}
+                            onAcknowledge={handleAcknowledgeAlarm}
+                            currentRole={currentRole}
+                        />
+                    )}
+
+                    {activeTab === 'audit-trail' && (
+                        <AuditTrailView auditLogs={auditLogs} />
+                    )}
+
+                    {activeTab === 'simulation-lab' && (
+                        <SimulationLab
+                            activeScenario={activeScenario}
+                            setActiveScenario={setActiveScenario}
+                            setActiveTab={setActiveTab}
+                        />
+                    )}
+
+                    {(activeTab === 'pitch-guide' || activeTab === 'pitch-mode') && (
+                        <PitchModeGuide
+                            setActiveTab={setActiveTab}
+                            setActiveScenario={setActiveScenario}
+                        />
+                    )}
+
+                    {activeTab === 'settings' && (
+                        <SettingsPanel />
+                    )}
+                </main>
+            </div>
         </div>
     );
-};
+}
+
+export default App;

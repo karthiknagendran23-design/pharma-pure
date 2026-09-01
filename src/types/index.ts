@@ -1,131 +1,172 @@
-export type UserRole = 'CITIZEN' | 'SURVEYOR' | 'ADMIN';
+export type NavigationTab =
+    | 'dashboard'
+    | 'live-cip'
+    | 'digital-twin'
+    | 'anomaly-intel'
+    | 'physics-clearance'
+    | 'equipment-health'
+    | 'equipment'
+    | 'cip-history'
+    | 'resource-opt'
+    | 'alarm-center'
+    | 'audit-trail'
+    | 'simulation-lab'
+    | 'pitch-guide'
+    | 'pitch-mode'
+    | 'settings';
 
-export type PropertyStatus = 'Draft' | 'Submitted' | 'Field Verified' | 'Approved' | 'Rejected' | 'Correction Requested';
+export type UserRole = 'OPERATOR' | 'QA_ENGINEER' | 'PROCESS_ENGINEER' | 'PLANT_MANAGER';
 
-export type LandUse = 'Residential' | 'Commercial' | 'Mixed Use' | 'Industrial' | 'Institutional' | 'Agricultural';
-
-export type BuildingType = 'Apartment' | 'Commercial Complex' | 'Mixed Use Tower' | 'Single Family Residence' | 'IT Park';
-
-export type UnitType = 'Apartment' | 'Office' | 'Retail Shop' | 'Penthouse' | 'Basement Parking' | 'Terrace Amenities';
-
-export type OccupancyStatus = 'Occupied' | 'Vacant' | 'Under Construction' | 'Leased';
-
-export type OwnershipType = 'Individual' | 'Joint' | 'Corporate' | 'Government' | 'Leasehold';
-
-export interface Coordinates {
-    lat: number;
-    lng: number;
+export interface PhaseInfo {
+    name: string;
+    duration_min: number;
+    description: string;
 }
 
-export interface Parcel {
-    id: string;
-    parcelUid: string; // ULPIN prototype e.g., TN-CHN-TRP-00018427
-    state: string;
-    district: string;
-    taluk: string;
-    village: string;
-    surveyNumber: string;
-    coordinates: Coordinates[]; // Polygon boundary points
-    center: Coordinates;
-    areaSqm: number; // Parcel area in square meters
-    landUse: LandUse;
-    status: PropertyStatus;
-    buildingIds: string[];
-    createdAt: string;
-    updatedAt: string;
+export interface CIPPhaseProgress {
+    current_phase: string;
+    phase_index: number;
+    total_phases: number;
+    description: string;
+    phase_progress_pct: number;
+    overall_progress_pct: number;
+    total_elapsed_min: number;
+    estimated_clearance_eta_min: number;
+    all_phases: PhaseInfo[];
 }
 
-export interface Unit {
-    id: string;
-    unitUid: string; // VPID e.g., TN-CHN-TRP-00018427-B01-F05-U12
-    floorId: string;
-    buildingId: string;
-    parcelId: string;
-    unitNumber: string; // e.g. "8B" or "U12"
-    unitType: UnitType;
-    areaSqft: number;
-    occupancyStatus: OccupancyStatus;
-    ownerNameMasked: string; // e.g. "R**** K*****"
-    ownershipType: OwnershipType;
-    sharePercentage: number;
-    marketValueEstimateINR: number;
-    relativeHeightOffset: number; // For 3D offset rendering
-    bounds3D?: { x: number; y: number; z: number; width: number; height: number; depth: number };
+export interface SensorFrame {
+    toc: number;            // ppb
+    conductivity: number;   // µS/cm
+    turbidity: number;      // NTU
+    flow: number;           // L/min
+    temp: number;           // °C
+    pressure: number;       // bar
+    timestamp: number;
 }
 
-export interface Floor {
-    id: string;
-    floorUid: string; // e.g., TN-CHN-TRP-00018427-B01-F05
-    buildingId: string;
-    parcelId: string;
-    floorNumber: number; // 0 = Ground, 1 = 1st, etc.
-    floorName: string; // e.g. "Floor 5" or "Ground Floor"
-    heightMeters: number;
-    builtUpAreaSqft: number;
-    unitIds: string[];
+export interface PhysicsClearance {
+    elapsed_minutes: number;
+    observed_toc: number;
+    expected_toc: number;
+    target_threshold: number;
+    clearance_rate_k: number;
+    clearance_percentage: number;
+    estimated_minutes_to_target: number;
+    lower_bound_confidence: number;
+    upper_bound_confidence: number;
+    clearance_status: 'ON_TRACK' | 'SLIGHT_LAG' | 'SIGNIFICANT_LAG' | 'OPTIMAL_ACCELERATED';
+    deviation_pct: number;
+    is_cleared: boolean;
 }
 
-export interface Building {
-    id: string;
-    buildingUid: string; // e.g., TN-CHN-TRP-00018427-B01
-    parcelId: string;
-    buildingName: string;
-    buildingType: BuildingType;
-    footprintCoordinates: Coordinates[]; // 2D polygon inside parcel
-    heightMeters: number;
-    floorCount: number;
-    constructionYear: number;
-    status: PropertyStatus;
-    floorIds: string[];
-    colorHex?: string;
+export interface XAIReasoning {
+    summary_bullet_points: string[];
+    most_likely_cause: string;
+    confidence_percentage: number;
+    flagged: boolean;
 }
 
-export interface PropertyOwnershipRecord {
-    id: string;
-    unitId: string;
-    ownerUid: string;
-    maskedName: string;
-    fullTitleRole: string;
-    ownershipType: OwnershipType;
-    sharePercentage: number;
-    registrationDate: string;
-    verificationStatus: 'Verified' | 'Pending' | 'Flagged';
-    encumbranceStatus: 'Clear' | 'Mortgaged' | 'Disputed';
+export interface MLAnomaly {
+    anomaly_score: number; // 0-100
+    status_label: 'NORMAL' | 'WATCH' | 'WARNING' | 'CRITICAL';
+    severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    reconstruction_error: number;
+    feature_contributions: {
+        flow: number;
+        toc: number;
+        conductivity: number;
+        turbidity: number;
+        temperature: number;
+        pressure: number;
+    };
+    xai_reasoning: XAIReasoning;
 }
 
-export interface PropertyEvent {
+export interface DecisionSupport {
+    cip_status: 'CLEANING' | 'ON TRACK' | 'OPTIMIZATION POSSIBLE' | 'INVESTIGATION REQUIRED' | 'HOLD' | 'READY FOR QA VERIFICATION';
+    action_recommendation: string;
+    interlock_state: 'GREEN' | 'YELLOW' | 'RED';
+    interlock_label: string;
+    interlock_description: string;
+    qa_readiness: 'IN_PROGRESS' | 'NEEDS_ATTENTION' | 'NOT_READY' | 'READY';
+    disclaimer: string;
+}
+
+export interface CIPTelemetryFrame {
+    equipment_id: string;
+    vessel_name: string;
+    previous_product: string;
+    recipe_id: string;
+    cycle_id: string;
+    operator: string;
+    phase_info: CIPPhaseProgress;
+    sensors: SensorFrame;
+    physics_model: PhysicsClearance;
+    ml_anomaly: MLAnomaly;
+    decision: DecisionSupport;
+    active_scenario: string;
+    simulation_speed: number;
+}
+
+export interface EquipmentAsset {
     id: string;
-    propertyUid: string;
-    eventType: 'Parcel Created' | 'Building Added' | 'Floor Added' | 'Unit Registered' | 'ID Generated' | 'Submitted Verification' | 'Field Inspected' | 'Approved';
+    name: string;
+    type: string;
+    health_score: number;
+    status: string;
+    active_cip: string | null;
+    current_phase: string;
+    previous_product: string;
+    anomaly_frequency_30d: number;
+    avg_cleaning_min: number;
+    last_maintenance: string;
+    spray_ball_health: number;
+    pump_health: number;
+    sensor_health: number;
+}
+
+export interface AlarmItem {
+    id: string;
     timestamp: string;
-    performedBy: string;
-    details: string;
+    equipment_id: string;
+    title: string;
+    description: string;
+    severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    sensor: string;
+    anomaly_score: number;
+    status: 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED';
+    acknowledged_by: string | null;
 }
 
-export interface GeometryValidationError {
-    code: string;
-    severity: 'ERROR' | 'WARNING';
-    message: string;
-    affectedObject: 'Parcel' | 'Building' | 'Floor' | 'Unit';
-    objectId: string;
-    actionRequired: string;
-}
-
-export interface AuditLogEntry {
+export interface AuditLogItem {
     id: string;
     timestamp: string;
-    userRole: UserRole;
-    actorName: string;
+    user: string;
     action: string;
-    targetUid: string;
+    equipment_id: string;
     details: string;
-    ipAddress?: string;
+    reason: string;
 }
 
-export interface OfflineSyncQueueItem {
-    id: string;
-    type: 'PARCEL_REGISTRATION' | 'BUILDING_REGISTRATION' | 'VERIFICATION_UPDATE';
-    timestamp: string;
-    payload: any;
-    status: 'PENDING' | 'SYNCED' | 'FAILED';
+export interface CIPHistoryItem {
+    cycle_id: string;
+    equipment_id: string;
+    date: string;
+    recipe: string;
+    duration_min: number;
+    water_consumed_L: number;
+    max_anomaly_score: number;
+    status: string;
+    qa_released: boolean;
+    water_saved_L: number;
 }
+
+export type ScenarioType =
+    | 'NORMAL'
+    | 'SPRAY_BLOCKAGE'
+    | 'FLOW_STAGNATION'
+    | 'SLOW_CLEARANCE'
+    | 'DETERGENT_ANOMALY'
+    | 'SENSOR_FAILURE'
+    | 'MULTI_ANOMALY';
